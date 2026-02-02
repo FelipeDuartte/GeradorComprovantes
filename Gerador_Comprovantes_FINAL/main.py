@@ -9,7 +9,7 @@ import unicodedata
 from tkinter import ttk
 
 # =============================
-# CAMINHO SEGURO (APENAS PARA ARQUIVOS EMBUTIDOS NO EXE)
+# CAMINHO
 # =============================
 def caminho_absoluto(nome_arquivo):
     if hasattr(sys, "_MEIPASS"):
@@ -26,7 +26,7 @@ def normalizar(texto):
     return texto
 
 # =============================
-# IDENTIFICAR COLUNAS AUTOMATICAMENTE
+# IDENTIFICAR COLUNAS
 # =============================
 def identificar_colunas(colunas):
     nome_col = None
@@ -107,7 +107,7 @@ def substituir_texto(doc, mapa):
 
 # =============================
 # GERAR COMPROVANTES
-
+# =============================
 def gerar_comprovantes(barra, status_label, botao):
     try:
         botao.config(state="disabled")
