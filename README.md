@@ -2,7 +2,7 @@
 
 Este projeto consiste em uma automação desenvolvida em Python que integra Excel e Word para gerar documentos de forma automática, rápida e padronizada, eliminando processos manuais repetitivos e reduzindo erros humanos.
 
-A aplicação lê dados estruturados a partir de uma planilha Excel e insere essas informações automaticamente em um modelo Word pré-definido, gerando documentos personalizados para cada registro da planilha.
+A aplicação lê dados estruturados a partir de uma planilha Excel e insere essas informações automaticamente em um modelo Word pré-definido, gerando documentos PDF personalizados para cada registro da planilha.
 
 ## 📌 Funcionalidades
 
@@ -12,7 +12,7 @@ A aplicação lê dados estruturados a partir de uma planilha Excel e insere ess
 
 - Geração de múltiplos documentos de forma automática
 
-- Padronização de documentos
+- Padronização de documentos em PDF
 
 - Interface simples com feedback de carregamento
 
@@ -21,6 +21,10 @@ A aplicação lê dados estruturados a partir de uma planilha Excel e insere ess
 - Geração de executável .exe, dispensando a instalação do Python
 
 ## 🛠️ Tecnologias Utilizadas
+
+- libreoffice
+
+- pandas
 
 - Python
 
