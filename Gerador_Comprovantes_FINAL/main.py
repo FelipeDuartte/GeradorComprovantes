@@ -3,6 +3,7 @@ from docx import Document
 import re
 import sys
 import os
+import subprocess
 import tkinter as tk
 from tkinter import messagebox
 import unicodedata
@@ -14,7 +15,8 @@ from tkinter import ttk
 def caminho_absoluto(nome_arquivo):
     if hasattr(sys, "_MEIPASS"):
         return os.path.join(sys._MEIPASS, nome_arquivo)
-    return os.path.join(os.path.abspath("."), nome_arquivo)
+    base = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base, nome_arquivo)
 
 # =============================
 # NORMALIZAR TEXTO
@@ -70,11 +72,7 @@ def identificar_colunas(colunas):
             "Verifique se o Excel possui colunas de Nome, CPF e Valor."
         )
 
-    return {
-        "nome": nome_col,
-        "cpf": cpf_col,
-        "valor": valor_col
-    }
+    return {"nome": nome_col, "cpf": cpf_col, "valor": valor_col}
 
 # =============================
 # FORMATADORES
@@ -106,14 +104,62 @@ def substituir_texto(doc, mapa):
                                 run.text = run.text.replace(chave, valor)
 
 # =============================
+# CONVERTER DOCX → PDF
+# =============================
+LIBREOFFICE_PATHS = [
+    "/Applications/LibreOffice.app/Contents/MacOS/soffice",
+    "/usr/local/bin/soffice",
+    "/usr/bin/soffice",
+]
+
+def encontrar_libreoffice():
+    for path in LIBREOFFICE_PATHS:
+        if os.path.exists(path):
+            return path
+    return None
+
+def converter_para_pdf(docx_path, output_dir):
+    soffice = encontrar_libreoffice()
+    if not soffice:
+        raise EnvironmentError(
+            "LibreOffice não encontrado.\n\n"
+            "Instale com:\n  brew install --cask libreoffice"
+        )
+
+    result = subprocess.run(
+        [soffice, "--headless", "--convert-to", "pdf", "--outdir", output_dir, docx_path],
+        capture_output=True,
+        text=True,
+        timeout=30
+    )
+
+    if result.returncode != 0:
+        raise RuntimeError(f"Erro ao converter para PDF:\n{result.stderr}")
+
+# =============================
 # GERAR COMPROVANTES
 # =============================
-def gerar_comprovantes(barra, status_label, botao):
+def gerar_comprovantes(barra, status_label, botao, janela):
     try:
         botao.config(state="disabled")
-        status_label.config(text="Iniciando...")
+        status_label.config(text="Verificando LibreOffice...")
 
-        df = pd.read_excel("dadosteste.xlsx")
+        # Valida LibreOffice antes de começar
+        if not encontrar_libreoffice():
+            raise EnvironmentError(
+                "LibreOffice não encontrado.\n\n"
+                "Instale com:\n  brew install --cask libreoffice"
+            )
+
+        xlsx_path = caminho_absoluto("dadosteste.xlsx")
+        modelo_path = caminho_absoluto("MODELO COMPROVANTE RENDIMENTOS.docx")
+
+        if not os.path.exists(xlsx_path):
+            raise FileNotFoundError(f"Arquivo não encontrado:\n{xlsx_path}")
+        if not os.path.exists(modelo_path):
+            raise FileNotFoundError(f"Modelo não encontrado:\n{modelo_path}")
+
+        df = pd.read_excel(xlsx_path)
         df.columns = df.columns.str.strip()
 
         colunas = identificar_colunas(df.columns)
@@ -122,39 +168,56 @@ def gerar_comprovantes(barra, status_label, botao):
         barra["maximum"] = total
         barra["value"] = 0
 
-        os.makedirs("output", exist_ok=True)
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        output_dir = os.path.join(base_dir, "output")
+        temp_dir = os.path.join(base_dir, "output", "_temp_docx")
+        os.makedirs(output_dir, exist_ok=True)
+        os.makedirs(temp_dir, exist_ok=True)
+
+        status_label.config(text="Iniciando...")
 
         for i, (_, linha) in enumerate(df.iterrows(), start=1):
             nome = str(linha[colunas["nome"]])
             cpf = formatar_cpf(linha[colunas["cpf"]])
             valor = formatar_valor(linha[colunas["valor"]])
 
-            doc = Document(
-                caminho_absoluto("MODELO COMPROVANTE RENDIMENTOS.docx")
-            )
-
+            doc = Document(modelo_path)
             substituir_texto(doc, {
                 "{{Nome}}": nome,
                 "{{CPF}}": cpf,
                 "{{Valor}}": valor
             })
 
-            doc.save(os.path.join("output", f"{nome}.docx"))
+            nome_arquivo = re.sub(r'[\\/*?:"<>|]', "_", nome)
+
+            # Salva docx temporário
+            docx_temp = os.path.join(temp_dir, f"{nome_arquivo}.docx")
+            doc.save(docx_temp)
+
+            # Converte para PDF
+            status_label.config(text=f"Convertendo {i} de {total} para PDF...")
+            janela.update_idletasks()
+            converter_para_pdf(docx_temp, output_dir)
+
+            # Remove docx temporário
+            os.remove(docx_temp)
 
             barra["value"] = i
-            status_label.config(
-                text=f"Gerando {i} de {total} comprovantes..."
-            )
+            status_label.config(text=f"Gerado {i} de {total}...")
             janela.update_idletasks()
+
+        # Remove pasta temp
+        os.rmdir(temp_dir)
 
         status_label.config(text="Concluído ✔")
         messagebox.showinfo(
             "Sucesso",
-            "Comprovantes gerados com sucesso!\n\nConfira a pasta 'output'."
+            f"PDFs gerados com sucesso!\n\nConfira a pasta:\n{output_dir}"
         )
 
     except Exception as e:
         messagebox.showerror("Erro", str(e))
+        status_label.config(text="Erro ao gerar.")
 
     finally:
         botao.config(state="normal")
@@ -162,41 +225,51 @@ def gerar_comprovantes(barra, status_label, botao):
 # =============================
 # INTERFACE
 # =============================
-janela = tk.Tk()
-janela.title("Gerador de Comprovantes")
-janela.geometry("420x260")
-janela.resizable(False, False)
+def main():
+    janela = tk.Tk()
+    janela.title("Gerador de Comprovantes")
+    janela.geometry("420x280")
+    janela.resizable(False, False)
 
-tk.Label(
-    janela,
-    text="Gerador de Comprovantes",
-    font=("Segoe UI", 15, "bold")
-).pack(pady=20)
+    tk.Label(
+        janela,
+        text="Gerador de Comprovantes",
+        font=("Segoe UI", 15, "bold")
+    ).pack(pady=20)
 
-barra = ttk.Progressbar(
-    janela,
-    orient="horizontal",
-    length=300,
-    mode="determinate"
-)
-barra.pack(pady=15)
+    barra = ttk.Progressbar(
+        janela,
+        orient="horizontal",
+        length=300,
+        mode="determinate"
+    )
+    barra.pack(pady=15)
 
-status_label = tk.Label(
-    janela,
-    text="Aguardando...",
-    font=("Segoe UI", 10)
-)
-status_label.pack()
+    status_label = tk.Label(
+        janela,
+        text="Aguardando...",
+        font=("Segoe UI", 10)
+    )
+    status_label.pack()
 
-botao = tk.Button(
-    janela,
-    text="Gerar comprovantes",
-    font=("Segoe UI", 11),
-    width=28,
-    height=2,
-    command=lambda: gerar_comprovantes(barra, status_label, botao)
-)
-botao.pack(pady=20)
+    tk.Label(
+        janela,
+        text="Os comprovantes serão gerados em PDF",
+        font=("Segoe UI", 9),
+        fg="gray"
+    ).pack(pady=(4, 0))
 
-janela.mainloop()
+    botao = tk.Button(
+        janela,
+        text="Gerar comprovantes",
+        font=("Segoe UI", 11),
+        width=28,
+        height=2,
+        command=lambda: gerar_comprovantes(barra, status_label, botao, janela)
+    )
+    botao.pack(pady=16)
 
+    janela.mainloop()
+
+if __name__ == "__main__":
+    main()
