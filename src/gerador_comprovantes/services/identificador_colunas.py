@@ -1,12 +1,3 @@
-"""
-Identificação automática de colunas na planilha.
-
-Foi transformado em classe porque encapsula regras de pontuação que
-podem crescer (novos sinônimos, novos pesos) e porque isso permite,
-por exemplo, criar variações do identificador (outro idioma, outras
-palavras-chave) sem tocar no resto do sistema — basta injetar outra
-instância.
-"""
 from __future__ import annotations
 
 from dataclasses import dataclass, field

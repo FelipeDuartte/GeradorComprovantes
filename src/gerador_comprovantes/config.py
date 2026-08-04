@@ -1,10 +1,3 @@
-"""
-Configurações centralizadas.
-
-Manter constantes e caminhos em um único lugar evita "magic strings"
-espalhadas pelo código e facilita ajustar comportamento sem caçar
-valores em vários arquivos.
-"""
 from __future__ import annotations
 
 from dataclasses import dataclass, field

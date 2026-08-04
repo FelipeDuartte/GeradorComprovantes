@@ -1,10 +1,6 @@
 """
 Resolução de caminhos, funcionando em Windows, macOS e Linux, tanto
 rodando como script quanto empacotado (PyInstaller).
-
-No projeto original, essa lógica tratava apenas o formato de bundle do
-macOS (`.app`). Aqui ela cobre também o caso "pasta com o .exe" do
-Windows/Linux, que é o formato padrão do PyInstaller nesses sistemas.
 """
 from __future__ import annotations
 

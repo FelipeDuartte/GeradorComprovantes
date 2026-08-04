@@ -1,13 +1,3 @@
-"""
-Orquestrador do caso de uso "gerar comprovantes".
-
-Esta classe NÃO conhece Tkinter, nem nenhuma outra interface gráfica.
-Ela reporta progresso através de um callback (`on_progresso`), seguindo
-o Observer pattern: quem chama decide o que fazer com cada atualização
-(atualizar uma barra de progresso, imprimir no terminal, escrever em
-um arquivo de log, etc). Isso é o que resolve o problema do projeto
-original, em que a lógica de negócio manipulava widgets diretamente.
-"""
 from __future__ import annotations
 
 import logging

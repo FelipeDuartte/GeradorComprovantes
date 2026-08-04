@@ -1,12 +1,3 @@
-"""
-Exceções específicas do domínio.
-
-Ter exceções próprias (em vez de usar Exception genérica) permite que
-cada camada trate apenas os erros que sabe tratar, e que a UI monte
-mensagens amigáveis sem precisar interpretar strings de erro.
-"""
-
-
 class GeradorComprovantesError(Exception):
     """Classe base para todos os erros conhecidos da aplicação."""
 

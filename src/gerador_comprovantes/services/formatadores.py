@@ -1,11 +1,3 @@
-"""
-Funções de formatação puras.
-
-Deliberadamente NÃO são classes: são funções sem estado e sem efeitos
-colaterais (mesma entrada -> mesma saída), o que as torna triviais de
-testar isoladamente. POO só é usado neste projeto onde há estado ou
-comportamento a encapsular — aqui não há necessidade.
-"""
 from __future__ import annotations
 
 import re

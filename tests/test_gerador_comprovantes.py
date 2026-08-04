@@ -1,8 +1,6 @@
 """
 Teste do orquestrador principal usando dublês (mocks) no lugar das
-dependências reais (Excel, Word, PDF). Isso só é possível porque a
-classe recebe suas dependências por injeção em vez de criá-las
-internamente — é o principal ganho de testabilidade da nova arquitetura.
+dependências reais (Excel, Word, PDF). 
 """
 from pathlib import Path
 from unittest.mock import MagicMock

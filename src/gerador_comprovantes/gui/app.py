@@ -1,17 +1,5 @@
 """
 Camada de apresentação (GUI).
-
-Esta classe só conhece widgets Tkinter e o `GeradorDeComprovantes`
-através da sua interface pública (`gerar(on_progresso=...)`). Ela não
-sabe nada sobre Excel, Word, PDF ou LibreOffice — apenas orquestra a
-experiência visual. Isso é o que chamamos de MVC/MVP simplificado:
-a "View" (esta classe) delega todo o trabalho para o "Model/Service".
-
-A geração roda em uma thread separada para não travar a interface
-(diferente do original, que usava `janela.update_idletasks()` como
-solução paliativa). Atualizações de widget sempre voltam para a
-thread principal via `janela.after(...)`, que é a forma segura de
-mexer no Tkinter a partir de outra thread.
 """
 from __future__ import annotations
 

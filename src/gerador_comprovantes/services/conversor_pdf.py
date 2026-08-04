@@ -1,12 +1,5 @@
 """
 Conversão de .docx para .pdf.
-
-Usamos uma classe abstrata (`ConversorPdf`) e uma implementação
-concreta (`ConversorLibreOffice`). Isso segue o Princípio da Inversão
-de Dependência: o resto do sistema depende da abstração, não da
-ferramenta específica. Se um dia quisermos trocar o motor de conversão
-(ex.: por uma API na nuvem), basta criar outra implementação — nada
-mais no projeto precisa mudar.
 """
 from __future__ import annotations
 
