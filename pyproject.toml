@@ -1,0 +1,9 @@
+[project]
+name = "gerador-comprovantes"
+version = "2.0.0"
+description = "Gerador automático de comprovantes de pagamento em PDF a partir de planilha Excel."
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
